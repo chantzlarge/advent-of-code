@@ -60,4 +60,10 @@ You can also [Share] this puzzle.
 
 ## Solution
 
+### Part 1
+
+TBD
+
+### Part 2
+
 TBD
