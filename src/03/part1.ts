@@ -9,11 +9,15 @@ import { createInterface } from 'readline'
         input: rs,
         crlfDelay: Infinity
     })
+    const L: string[] = ['', '', '']
+
+    let s = 0
+
     const p = (l: string) => {
         L.shift()
         L.push(l)
 
-        let m, n = 0
+        let m
 
         while ((m = dre.exec(L[1])) !== null) {
             if (
@@ -21,22 +25,16 @@ import { createInterface } from 'readline'
                 (L[1].substring(m.index - 1, dre.lastIndex + 1).match(scre)) ||
                 (L[2].substring(m.index - 1, dre.lastIndex + 1).match(scre))
             ) {
-                n += parseInt(m[0])
+                s += parseInt(m[0])
             }
         }
-
-        return n
     }
-
-    const L: string[] = ['', '', '']
-
-    let s = 0
 
     for await (const l of rsi) {
-        s += p(l)
+        p(l)
     }
 
-    s += p('')
+    p('')
 
     console.log(s)
 })()
