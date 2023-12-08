@@ -1,58 +1,42 @@
 import { createReadStream } from 'fs'
 import { createInterface } from 'readline'
 
-const plural_digit_global_re = /([\d]+)/g
-const special_char_global_re = /[-’/`~!#*$@_%+=,^&(){}[\]|;:”<>?\\]/g
-
-const p = async (fileName: string) => {
-    const rs = createReadStream(fileName)
-    const i = createInterface({
+(async () => {
+    const dre = /([\d]+)/g
+    const scre = /[-’/`~!#*$@_%+=,^&(){}[\]|;:”<>?\\]/g
+    const rs = createReadStream(process.argv[2])
+    const rsi = createInterface({
         input: rs,
         crlfDelay: Infinity
     })
-    const L: string[] = ['']
-
-    let r;
-    let s = 0
-
-    for await (const l of i) {
+    const p = (l: string) => {
+        L.shift()
         L.push(l)
 
-        if (L.length < 3) {
-            continue
-        }
+        let m, n = 0
 
-        if (L.length > 3) {
-            L.shift()
-        }
-
-        while ((r = plural_digit_global_re.exec(L[1])) !== null) {
+        while ((m = dre.exec(L[1])) !== null) {
             if (
-                L[0].substring(r.index - 1, plural_digit_global_re.lastIndex + 1).match(special_char_global_re) ||
-                L[1].substring(r.index - 1, plural_digit_global_re.lastIndex + 1).match(special_char_global_re) ||
-                L[2].substring(r.index - 1, plural_digit_global_re.lastIndex + 1).match(special_char_global_re)
+                (L[0].substring(m.index - 1, dre.lastIndex + 1).match(scre)) ||
+                (L[1].substring(m.index - 1, dre.lastIndex + 1).match(scre)) ||
+                (L[2].substring(m.index - 1, dre.lastIndex + 1).match(scre))
             ) {
-                s += parseInt(r[0])
+                n += parseInt(m[0])
             }
         }
+
+        return n
     }
 
-    L.push('')
-    L.shift()
+    const L: string[] = ['', '', '']
 
-    while ((r = plural_digit_global_re.exec(L[1])) !== null) {
-        if (
-            L[0].substring(r.index - 1, plural_digit_global_re.lastIndex + 1).match(special_char_global_re) ||
-            L[1].substring(r.index - 1, plural_digit_global_re.lastIndex + 1).match(special_char_global_re) ||
-            L[2].substring(r.index - 1, plural_digit_global_re.lastIndex + 1).match(special_char_global_re)
-        ) {
-            s += parseInt(r[0])
-        }
+    let s = 0
+
+    for await (const l of rsi) {
+        s += p(l)
     }
 
-    return s
-}
+    s += p('')
 
-const main = async () => console.log(await p(process.argv[2]))
-
-main()
+    console.log(s)
+})()
